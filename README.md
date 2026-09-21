@@ -11,6 +11,19 @@
 
 收藏與閱讀紀錄存在這台裝置上。
 
+## 用 Vercel 上線
+
+這是**新倉庫**，請 Import 這個，不要再用舊的 `vivid-clover-plum-rocket`：
+
+**https://github.com/tubo-cyber/mingjuan-chajing**
+
+1. 打開 [vercel.com/new](https://vercel.com/new)
+2. Import `tubo-cyber/mingjuan-chajing`
+3. Framework Preset 選 **Other**（不要選 Vite）
+4. Build Command 填 `npm run build`
+5. Output Directory **留空**
+6. Deploy
+
 ## 資料說明
 
 內容版權屬原作者與原網站。轉載或出版請遵守原站規定。

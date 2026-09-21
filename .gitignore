@@ -1,5 +1,13 @@
 node_modules/
-.project_id
-.github_repo
+.vercel/
+.grok/
+screenshots/
+attachments/
+artifacts/
 .env
 .env.*
+.project_id
+.github_repo
+.node_modules.lock
+*.log
+.DS_Store

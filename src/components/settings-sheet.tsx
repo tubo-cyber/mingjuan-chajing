@@ -1,10 +1,11 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { Settings2, X } from "lucide-react";
 import { FONTS, usePrefs, type ThemeId } from "@/lib/prefs";
 import { cn } from "@/lib/utils";
 
-export function SettingsSheet({ children }: { children: ReactNode }) {
+export function SettingsSheet() {
+  const [open, setOpen] = useState(false);
+  const titleId = useId();
   const font = usePrefs((s) => s.font);
   const size = usePrefs((s) => s.size);
   const leading = usePrefs((s) => s.leading);
@@ -12,117 +13,154 @@ export function SettingsSheet({ children }: { children: ReactNode }) {
   const script = usePrefs((s) => s.script);
   const { setFont, setSize, setLeading, setTheme, setScript } = usePrefs();
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-fg/30" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-[length:var(--radius-xl)] border border-border bg-surface p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-soft)] outline-none sm:inset-auto sm:right-4 sm:top-16 sm:bottom-auto sm:w-96 sm:rounded-[length:var(--radius-xl)]">
-          <div className="mb-4 flex items-center justify-between">
-            <Dialog.Title className="text-base font-semibold">閱讀設定</Dialog.Title>
-            <Dialog.Close className="grid size-10 place-items-center rounded-[length:var(--radius-md)] hover:bg-raised">
-              <X className="size-4" />
-            </Dialog.Close>
-          </div>
+    <>
+      <button
+        type="button"
+        className="grid size-11 place-items-center rounded-[length:var(--radius-md)] text-muted hover:bg-surface hover:text-fg"
+        aria-label="閱讀設定"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+      >
+        <Settings2 className="size-5" />
+      </button>
 
-          <Section label="字體">
-            <div className="grid grid-cols-2 gap-2">
-              {FONTS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFont(f.id)}
-                  className={cn(
-                    "min-h-11 rounded-[length:var(--radius-md)] border px-3 text-sm",
-                    font === f.id ? "border-fg bg-fg text-bg" : "border-border bg-raised",
-                  )}
-                  style={{ fontFamily: f.stack }}
-                >
-                  {f.label}
-                </button>
-              ))}
+      {open ? (
+        <div className="fixed inset-0 z-50">
+          <button
+            type="button"
+            className="absolute inset-0 bg-fg/30"
+            aria-label="關閉設定"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-[length:var(--radius-xl)] border border-border bg-surface p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-soft)] sm:inset-auto sm:right-4 sm:top-16 sm:bottom-auto sm:w-96 sm:rounded-[length:var(--radius-xl)]"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 id={titleId} className="text-base font-semibold">
+                閱讀設定
+              </h2>
+              <button
+                type="button"
+                className="grid size-10 place-items-center rounded-[length:var(--radius-md)] hover:bg-raised"
+                aria-label="關閉"
+                onClick={() => setOpen(false)}
+              >
+                <X className="size-4" />
+              </button>
             </div>
-          </Section>
 
-          <Section label={`字級 ${size}px`}>
-            <input
-              type="range"
-              min={16}
-              max={26}
-              step={1}
-              value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              className="w-full accent-[var(--color-accent)]"
-            />
-            <p className="mt-2 text-muted" style={{ fontSize: size, lineHeight: leading }}>
-              起初神創造天地。地是空虛混沌。
-            </p>
-          </Section>
+            <Section label="字體">
+              <div className="grid grid-cols-2 gap-2">
+                {FONTS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFont(f.id)}
+                    className={cn(
+                      "min-h-11 rounded-[length:var(--radius-md)] border px-3 text-sm",
+                      font === f.id ? "border-fg bg-fg text-bg" : "border-border bg-raised",
+                    )}
+                    style={{ fontFamily: f.stack }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </Section>
 
-          <Section label={`行距 ${leading.toFixed(2)}`}>
-            <input
-              type="range"
-              min={1.5}
-              max={2.2}
-              step={0.05}
-              value={leading}
-              onChange={(e) => setLeading(Number(e.target.value))}
-              className="w-full accent-[var(--color-accent)]"
-            />
-          </Section>
+            <Section label={`字級 ${size}px`}>
+              <input
+                type="range"
+                min={16}
+                max={26}
+                step={1}
+                value={size}
+                onChange={(e) => setSize(Number(e.target.value))}
+                className="w-full accent-[var(--color-accent)]"
+              />
+              <p className="mt-2 text-muted" style={{ fontSize: size, lineHeight: leading }}>
+                起初神創造天地。地是空虛混沌。
+              </p>
+            </Section>
 
-          <Section label="紙色">
-            <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  ["paper", "素紙"],
-                  ["ink", "夜讀"],
-                  ["dusk", "青暮"],
-                ] as [ThemeId, string][]
-              ).map(([id, label]) => (
+            <Section label={`行距 ${leading.toFixed(2)}`}>
+              <input
+                type="range"
+                min={1.5}
+                max={2.2}
+                step={0.05}
+                value={leading}
+                onChange={(e) => setLeading(Number(e.target.value))}
+                className="w-full accent-[var(--color-accent)]"
+              />
+            </Section>
+
+            <Section label="紙色">
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ["paper", "素紙"],
+                    ["ink", "夜讀"],
+                    ["dusk", "青暮"],
+                  ] as [ThemeId, string][]
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTheme(id)}
+                    className={cn(
+                      "min-h-11 rounded-[length:var(--radius-md)] border text-sm",
+                      theme === id ? "border-fg bg-fg text-bg" : "border-border bg-raised",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </Section>
+
+            <Section label="原文語文">
+              <div className="grid grid-cols-2 gap-2">
                 <button
-                  key={id}
                   type="button"
-                  onClick={() => setTheme(id)}
+                  onClick={() => setScript("T")}
                   className={cn(
                     "min-h-11 rounded-[length:var(--radius-md)] border text-sm",
-                    theme === id ? "border-fg bg-fg text-bg" : "border-border bg-raised",
+                    script === "T" ? "border-fg bg-fg text-bg" : "border-border bg-raised",
                   )}
                 >
-                  {label}
+                  繁體
                 </button>
-              ))}
-            </div>
-          </Section>
-
-          <Section label="原文語文">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setScript("T")}
-                className={cn(
-                  "min-h-11 rounded-[length:var(--radius-md)] border text-sm",
-                  script === "T" ? "border-fg bg-fg text-bg" : "border-border bg-raised",
-                )}
-              >
-                繁體
-              </button>
-              <button
-                type="button"
-                onClick={() => setScript("S")}
-                className={cn(
-                  "min-h-11 rounded-[length:var(--radius-md)] border text-sm",
-                  script === "S" ? "border-fg bg-fg text-bg" : "border-border bg-raised",
-                )}
-              >
-                简体
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-faint">切換後新打開的章節會抓取對應語文頁面。</p>
-          </Section>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+                <button
+                  type="button"
+                  onClick={() => setScript("S")}
+                  className={cn(
+                    "min-h-11 rounded-[length:var(--radius-md)] border text-sm",
+                    script === "S" ? "border-fg bg-fg text-bg" : "border-border bg-raised",
+                  )}
+                >
+                  简体
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-faint">切換後新打開的章節會抓取對應語文頁面。</p>
+            </Section>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 

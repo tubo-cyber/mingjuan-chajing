@@ -12,7 +12,17 @@ import { grokPwaPlugin } from "./scripts/grok-pwa-plugin.mjs";
 import { appEnvPlugin } from "./scripts/app-env-plugin.mjs";
 import { isMigrationFile } from "./scripts/migration-plan.mjs";
 
-/** The files `src/lib/db.ts` globs — same directory, same non-recursive scope. */
+function blockTslibPackage(): Plugin {
+  const stub = join(process.cwd(), "src/lib/tslib-stub.ts");
+  return {
+    name: "block-tslib-package",
+    enforce: "pre",
+    resolveId(id) {
+      if (id === "tslib" || id.startsWith("tslib/")) return stub;
+      return null;
+    },
+  };
+}
 function hasGlobbedMigrations(root: string): boolean {
   try {
     return readdirSync(join(root, "migrations")).some(isMigrationFile);
@@ -156,7 +166,13 @@ export default defineConfig(({ command, isPreview }) => ({
     port: 8081,
     strictPort: true,
   },
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    tsconfigPaths: true,
+    alias: {
+      tslib: join(process.cwd(), "src/lib/tslib-stub.ts"),
+    },
+  },
+  ssr: { noExternal: ["tslib"] },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
@@ -166,6 +182,7 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
+    blockTslibPackage(),
     tanstackStart(),
     ...(command === "build" || isPreview
       ? [
@@ -175,6 +192,7 @@ export default defineConfig(({ command, isPreview }) => ({
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.
             serverDir: "./server",
+            noExternals: ["tslib"],
           }),
         ]
       : []),

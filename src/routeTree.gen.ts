@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ColumnsRouteImport } from './routes/columns'
 import { Route as IntroRouteImport } from './routes/intro'
-import { Route as PeopleRouteImport } from './routes/people'
 import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as ViewRouteImport } from './routes/view'
 import { Route as BookBookIdRouteImport } from './routes/book.$bookId'
@@ -33,11 +32,6 @@ const ColumnsRoute = ColumnsRouteImport.update({
 const IntroRoute = IntroRouteImport.update({
   id: '/intro',
   path: '/intro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PeopleRoute = PeopleRouteImport.update({
-  id: '/people',
-  path: '/people',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TopicsRoute = TopicsRouteImport.update({
@@ -75,7 +69,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/columns': typeof ColumnsRoute
   '/intro': typeof IntroRoute
-  '/people': typeof PeopleRoute
   '/topics': typeof TopicsRoute
   '/view': typeof ViewRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -87,7 +80,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/columns': typeof ColumnsRoute
   '/intro': typeof IntroRoute
-  '/people': typeof PeopleRoute
   '/topics': typeof TopicsRoute
   '/view': typeof ViewRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -100,7 +92,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/columns': typeof ColumnsRoute
   '/intro': typeof IntroRoute
-  '/people': typeof PeopleRoute
   '/topics': typeof TopicsRoute
   '/view': typeof ViewRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -114,7 +105,6 @@ export interface FileRouteTypes {
     | '/'
     | '/columns'
     | '/intro'
-    | '/people'
     | '/topics'
     | '/view'
     | '/book/$bookId'
@@ -126,7 +116,6 @@ export interface FileRouteTypes {
     | '/'
     | '/columns'
     | '/intro'
-    | '/people'
     | '/topics'
     | '/view'
     | '/book/$bookId'
@@ -138,7 +127,6 @@ export interface FileRouteTypes {
     | '/'
     | '/columns'
     | '/intro'
-    | '/people'
     | '/topics'
     | '/view'
     | '/book/$bookId'
@@ -151,7 +139,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ColumnsRoute: typeof ColumnsRoute
   IntroRoute: typeof IntroRoute
-  PeopleRoute: typeof PeopleRoute
   TopicsRoute: typeof TopicsRoute
   ViewRoute: typeof ViewRoute
   BookBookIdRoute: typeof BookBookIdRoute
@@ -181,13 +168,6 @@ declare module '@tanstack/react-router' {
       path: '/intro'
       fullPath: '/intro'
       preLoaderRoute: typeof IntroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/people': {
-      id: '/people'
-      path: '/people'
-      fullPath: '/people'
-      preLoaderRoute: typeof PeopleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/topics': {
@@ -239,7 +219,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ColumnsRoute: ColumnsRoute,
   IntroRoute: IntroRoute,
-  PeopleRoute: PeopleRoute,
   TopicsRoute: TopicsRoute,
   ViewRoute: ViewRoute,
   BookBookIdRoute: BookBookIdRoute,

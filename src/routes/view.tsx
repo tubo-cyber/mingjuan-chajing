@@ -1,0 +1,110 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { ChevronLeft, Star } from "lucide-react";
+import { z } from "zod";
+import { AppShell } from "@/components/app-shell";
+import { ReaderView } from "@/components/reader-view";
+import { parentOfArticle } from "@/lib/catalog";
+import { getArticleFn } from "@/lib/server-fns";
+import { useLibrary } from "@/lib/prefs";
+import { cn } from "@/lib/utils";
+
+const searchSchema = z.object({
+  path: z.string(),
+});
+
+export const Route = createFileRoute("/view")({
+  validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({ path: search.path }),
+  loader: async ({ deps }) => {
+    const article = await getArticleFn({ data: { path: deps.path, title: "查經資料" } });
+    return { article, path: deps.path };
+  },
+  component: ViewPage,
+});
+
+function ViewPage() {
+  const { article, path } = Route.useLoaderData();
+  const href = `/view?path=${encodeURIComponent(path)}`;
+  const pushHistory = useLibrary((s) => s.pushHistory);
+  const toggleStar = useLibrary((s) => s.toggleStar);
+  const starred = useLibrary((s) => s.stars.some((x) => x.href === href));
+
+  useEffect(() => {
+    pushHistory({ href, title: article.title });
+  }, [href, article.title, pushHistory]);
+
+  return (
+    <AppShell
+      title={article.title}
+      back={<ArticleBack path={path} />}
+      action={
+        <button type="button" className="grid size-11 place-items-center" onClick={() => toggleStar({ href, title: article.title })}>
+          <Star className={cn("size-5", starred ? "fill-accent text-accent" : "text-muted")} />
+        </button>
+      }
+    >
+      {article.isPdf ? (
+        <div>
+          <p className="mb-4 text-sm text-muted">這是 PDF 檔，請開啟原文閱讀。</p>
+          <a
+            href={article.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center rounded-[length:var(--radius-md)] bg-fg px-4 text-sm text-bg"
+          >
+            開啟 PDF
+          </a>
+        </div>
+      ) : (
+        <ReaderView title={article.title} blocks={article.blocks} />
+      )}
+    </AppShell>
+  );
+}
+
+function ArticleBack({ path }: { path: string }) {
+  const parent = parentOfArticle(path);
+  const cls = "grid size-11 place-items-center";
+  const icon = <ChevronLeft className="size-5" />;
+  if (parent.kind === "topic") {
+    return (
+      <Link to="/topic/$topicId" params={{ topicId: parent.topicId }} className={cls} aria-label="返回主題">
+        {icon}
+      </Link>
+    );
+  }
+  if (parent.kind === "topics") {
+    return (
+      <Link to="/topics" className={cls} aria-label="返回主題">
+        {icon}
+      </Link>
+    );
+  }
+  if (parent.kind === "column") {
+    return (
+      <Link to="/column/$slug" params={{ slug: parent.slug }} className={cls} aria-label="返回專欄">
+        {icon}
+      </Link>
+    );
+  }
+  if (parent.kind === "columns") {
+    return (
+      <Link to="/columns" className={cls} aria-label="返回專欄">
+        {icon}
+      </Link>
+    );
+  }
+  if (parent.kind === "book") {
+    return (
+      <Link to="/book/$bookId" params={{ bookId: parent.bookId }} className={cls} aria-label="返回書卷">
+        {icon}
+      </Link>
+    );
+  }
+  return (
+    <Link to="/" className={cls} aria-label="返回">
+      {icon}
+    </Link>
+  );
+}
